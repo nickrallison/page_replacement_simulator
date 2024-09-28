@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.15...3.30)
 # This is your project statement. You should always list languages;
 # Listing the version is nice here since it sets lots of useful variables
 project(
-  process
+  page
   VERSION 1.0
   LANGUAGES C
 )
@@ -29,8 +29,8 @@ project(
 
 # Adding something we can run - Output name matches target name
 add_library(${PROJECT_NAME}
-  src/pid_record.c
-  include/pid_record.h
+  src/page.c
+  include/page.h
 
 )
 
