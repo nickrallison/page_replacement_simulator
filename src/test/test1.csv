@@ -1,0 +1,5 @@
+Pid,Arrival Time,Time until first Response,Burst Length
+42,0,15,42
+24,10,100,186
+42,15,7,36
+14,16,152,158
