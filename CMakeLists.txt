@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.15...3.30)
 # This is your project statement. You should always list languages;
 # Listing the version is nice here since it sets lots of useful variables
 project(
-  CPSC457A1
+  CPSC457A2
   VERSION 1.0
 )
 

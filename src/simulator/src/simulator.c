@@ -7,134 +7,120 @@
 #include "page.h"
 
 // #### page QUEUE ####
-int page_queue_new(page_records_t page_records,
-                      int (*compare)(const void *, const void *)) {
-    page_queue_t page_queue = {compare, page_records};
+page_queue_t page_queue_new(int (*get_value)(const page_record_t *)) {
+    page_records_t page_records = page_records_new();
+    page_queue_t page_queue = {get_value, page_records};
+    return page_queue;
+}
+
+int page_record_exchange(page_record_t *a, page_record_t *b) {
+    page_record_t temp = *a;
+    *a = *b;
+    *b = temp;
     return 0;
 }
 
 int page_queue_add(page_queue_t *page_queue, page_record_t page) {
     page_records_append(&page_queue->page_queue, page);
-    page_records_sort_by(&page_queue->page_queue, page_queue->compare);
 
+    uint32_t index = page_queue->page_queue.size - 1;
+    uint32_t parent_index = (index - 1) / 2;
+
+    int key = page_queue->get_value(&page);
+    int parent_key = page_queue->get_value(&page_queue->page_queue.page_records[parent_index]);
+
+    while (index > 0 && key > parent_key) {
+        page_record_exchange(&page_queue->page_queue.page_records[index],
+                             &page_queue->page_queue.page_records[parent_index]);
+        index = parent_index;
+        parent_index = (index - 1) / 2;
+        key = page_queue->get_value(&page_queue->page_queue.page_records[index]);
+        parent_key = page_queue->get_value(&page_queue->page_queue.page_records[parent_index]);
+    }
     return 0;
 }
 
-page_record_t page_queue_pop(page_queue_t *page_queue) {
-    page_record_t page = page_queue->page_queue.page_records[0];
-    for (int i = 0; i < page_queue->page_queue.size - 1; i++) {
-        page_queue->page_queue.page_records[i] =
-                page_queue->page_queue.page_records[i + 1];
+int page_queue_max_heapify(page_queue_t *page_queue, uint32_t index) {
+    uint32_t left = 2 * index + 1;
+    uint32_t right = 2 * index + 2;
+    uint32_t largest = index;
+
+    if (left < page_queue->page_queue.size &&
+        page_queue->get_value(&page_queue->page_queue.page_records[left]) >
+        page_queue->get_value(&page_queue->page_queue.page_records[largest])) {
+        largest = left;
     }
+
+    if (right < page_queue->page_queue.size &&
+        page_queue->get_value(&page_queue->page_queue.page_records[right]) >
+        page_queue->get_value(&page_queue->page_queue.page_records[largest])) {
+        largest = right;
+    }
+
+    if (largest != index) {
+        page_record_exchange(&page_queue->page_queue.page_records[index],
+                             &page_queue->page_queue.page_records[largest]);
+        page_queue_max_heapify(page_queue, largest);
+    }
+    return 0;
+}
+page_record_t page_queue_pop_top(page_queue_t *page_queue) {
+    page_record_t top = page_queue->page_queue.page_records[0];
+    page_queue->page_queue.page_records[0] = page_queue->page_queue.page_records[page_queue->page_queue.size - 1];
     page_queue->page_queue.size--;
-    return page;
+    page_queue_max_heapify(page_queue, 0);
+    return top;
 }
 
 // #### SIMULATOR ####
 simulator_t simulator_new(page_records_t* page_records,
-                          int (*compare)(const void *, const void *)) {
+                          int (*get_value)(const page_record_t *), uint32_t cache_size) {
+    int current_index = 0;
+
+    page_record_t current_page_option = {0};
+    uint8_t has_current_page = 0;
+    page_records_t page_records_in_order = *page_records;
+    page_queue_t cache = page_queue_new(get_value);
+
+    uint32_t page_faults = 0;
+    uint32_t write_backs = 0;
+
+    uint32_t jobs_remaining = page_records_in_order.size;
+
+    simulator_t simulator = {current_index, current_page_option,
+                             has_current_page, page_records_in_order, cache_size, cache,
+                             page_faults, write_backs, jobs_remaining};
+    return simulator;
 
 }
 
-// 1. if another page is ready to run, add it to the page queue
-// 2. if using preemptive scheduling, check if the current page should be
-// added back to the page queue
-// 3. if no page is running, get the next page from the page queue
-// 4. run the page for one time step
-// 5. if the page is done, add it to the completion records
-// 6. increment the current time
+// 1. Grab the next page from the page_records_in_order (don't have to pop it off, just copy it from it s index)
+// 2. If the cache is full, pop the top page off the cache and record that it needed a write back if its dirty
+// 3. Insert the new page into the cache
+// 3. Do custom page queue logic to simulate different caches
+// 4. On entrace to the queue record whether the page was a page fault
+// 5. On exit from the queue record whether it needed a write back
 
 int simulator_time_step(simulator_t *simulator) {
-    // 1. if another page is ready to run, add it to the page queue
-    // using the current index to keep track of the next page to add
-    while (simulator->current_index < simulator->page_records_in_order.size &&
-           simulator->page_records_in_order.page_records[simulator->current_index]
-           .arrival_time == simulator->current_time) {
-        simulator->page_records_in_order
-                          .page_records[simulator->current_index].added_to_queue = simulator->current_time;
-        page_queue_add(&simulator->page_queue,
-                          simulator->page_records_in_order
-                          .page_records[simulator->current_index]);
-        simulator->current_index++;
-    }
+    // 1. Grab the next page from the page_records_in_order (don't have to pop it off, just copy it from it s index)
+    simulator->current_page_option = simulator->page_records_in_order.page_records[simulator->current_index];
+    simulator->has_current_page = 1;
 
-    // 2. if using preemptive scheduling, check if the current page should be
-    // added back to the page queue
-    if (simulator->time_quantum && simulator->has_current_page &&
-        simulator->current_page_option.running_cpu_burst > 0 && simulator->time_quantum_remaining == 0) {
-        simulator->current_page_option.added_to_queue = simulator->current_time;
-        simulator->current_page_option.last_preempted = simulator->current_time;
-        page_queue_add(&simulator->page_queue,
-                          simulator->current_page_option);
+    // 2. If the current page is not null, add it back to the page_queue
+    page_queue_add(&simulator->cache, simulator->current_page_option);
 
-        simulator->has_current_page = 0;
-        simulator->time_quantum_remaining = simulator->time_quantum;
-    }
+    printf("TODO: Implement simulator_time_step\n");
+    exit(1);
 
-    // 3. if no page is running, get the next page from the page queue
-    if (!simulator->has_current_page) {
-        if (simulator->page_queue.page_queue.size > 0) {
-            simulator->current_page_option =
-                    page_queue_pop(&simulator->page_queue);
-            simulator->has_current_page = 1;
-            simulator->time_quantum_remaining = simulator->time_quantum;
-        }
-    }
-
-    // 4. run the page for one time step
-    simulator->current_page_option.running_cpu_burst--;
-    simulator->time_quantum_remaining--;
-    if (simulator->current_page_option.has_started == 0) {
-        simulator->current_page_option.start_time = simulator->current_time;
-        simulator->current_page_option.has_started = 1;
-    }
-    if (simulator->current_page_option.running_time_until_first_response > 0) {
-        simulator->current_page_option.running_time_until_first_response--;
-    }
-
-
-    // 5. if the page responded, record the first response time
-    if (simulator->has_current_page &&
-        simulator->current_page_option.running_time_until_first_response == 0 && simulator->current_page_option.first_response_time == 0) {
-        simulator->current_page_option.first_response_time = simulator->current_time + 1;
-        // printf("Time: %d, Burst Left: %d, Response Time: %d\n",
-        //        simulator->current_time + 1, simulator->current_page_option.running_cpu_burst, simulator->current_page_option.first_response_time);
-    }
-
-    // 6. if the page is done, add it to the completion records
-    if (simulator->has_current_page &&
-        simulator->current_page_option.running_cpu_burst == 0) {
-        simulator->current_page_option.completion_time = simulator->current_time + 1;
-        simulator->has_current_page = 0;
-        simulator->jobs_remaining--;
-
-        simulator->seq_pages[simulator->seq_page_index] = simulator->current_page_option.page;
-        simulator->seq_page_index++;
-
-        // tau_n+1 = alpha * t_n + (1 - alpha) * tau_n
-
-
-        // tau_n = simulator->exp_time_remaining_estimate
-        // t_n = simulator->current_page_option.actual_cpu_burst
-        simulator->current_page_option.exp_time_remaining_chart[simulator->current_page_option.page] =
-                simulator->alpha * (float) simulator->current_page_option.actual_cpu_burst +
-                (1 - simulator->alpha) * simulator->current_page_option.exp_time_remaining_chart[simulator->current_page_option.page];
-
-        page_records_append(&simulator->page_completion_records,
-                           simulator->current_page_option);
-    }
-
-    // 7. increment the current time
-    simulator->current_time++;
+    // End of function
+    simulator->current_index++;
     return 0;
 }
 
 page_records_t *simulator_run(simulator_t *simulator) {
     // this while loop will cause problems if
-    while (simulator->jobs_remaining > 0) {
+    while (simulator->current_index < simulator->page_records_in_order.size) {
         simulator_time_step(simulator);
     }
-    simulator->page_completion_records.seq_pages = simulator->seq_pages;
-    simulator->page_completion_records.seq_page_index = simulator->seq_page_index;
-    return &simulator->page_completion_records;
+    return NULL;
 }
