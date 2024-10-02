@@ -17,6 +17,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/scheduler)
 add_subdirectory(src/page)
 add_subdirectory(src/simulator)
-# add_subdirectory(src/executable)
+add_subdirectory(src/executable)
+
 # add_subdirectory(src/test)
 # add_subdirectory(src/graphing)

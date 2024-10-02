@@ -64,7 +64,7 @@ page_records_t create_page_records() {
     }
 
     // Reads stdin line by line and creates a page_record_t for each line
-    while (scanf("%d,%d\n", &page_number, &dirty) != EOF) {
+    while (scanf("%d,%hhd\n", &page_number, &dirty) != EOF) {
         page_record_t page_record = page_record_new(page_number, dirty);
         page_records_append(&page_records, page_record);
     }
@@ -88,7 +88,7 @@ page_records_t create_page_records_no_stdin(const char* input) {
 
 
     // Reads stdin line by line and creates a page_record_t for each line
-    while (sscanf(current, "%d,%d\n", &page_number, &dirty) == 2) {
+    while (sscanf(current, "%d,%hhd\n", &page_number, &dirty) == 2) {
         page_record_t page_record = page_record_new(
             page_number, dirty);
         page_records_append(&page_records, page_record);

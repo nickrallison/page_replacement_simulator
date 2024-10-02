@@ -9,6 +9,9 @@
 typedef struct page_record_t {
     uint32_t page_number;
     uint8_t dirty;
+
+    // Assigned characteristics
+    uint32_t arrival_time;
 } page_record_t;
 
 page_record_t page_record_new(uint32_t page_number, uint8_t dirty);
@@ -31,5 +34,18 @@ page_records_t create_page_records_no_stdin(const char* input);
 
 int page_records_sort_by(page_records_t *self,
                         int (*compare)(const void *, const void *));
+
+typedef struct page_result_t {
+    page_record_t page_record;
+} page_result_t;
+
+typedef struct page_results_t {
+    int size;
+    page_result_t *page_results;
+} page_results_t;
+
+page_results_t page_results_from_page_records(page_records_t *page_records);
+int page_results_merge(page_results_t *self, page_result_t other);
+int page_results_print(const page_results_t *self);
 
 #endif // PAGE_H

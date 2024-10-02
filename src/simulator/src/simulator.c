@@ -117,10 +117,11 @@ int simulator_time_step(simulator_t *simulator) {
     return 0;
 }
 
-page_records_t *simulator_run(simulator_t *simulator) {
+page_results_t simulator_run(simulator_t *simulator) {
     // this while loop will cause problems if
     while (simulator->current_index < simulator->page_records_in_order.size) {
         simulator_time_step(simulator);
     }
-    return NULL;
+    page_results_t page_results = page_results_from_page_records(&simulator->page_records_in_order);
+    return page_results;
 }

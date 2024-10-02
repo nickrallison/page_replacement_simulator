@@ -3,7 +3,7 @@
 #include "scheduler.h"
 
 int main(int argc, char *argv[]) {
-    main_runner(argc, argv);
-    // pid_results_print(&pid_results);
+    page_results_t page_results = main_runner(argc, argv);
+    page_results_print(&page_results);
     return 0;
 }
