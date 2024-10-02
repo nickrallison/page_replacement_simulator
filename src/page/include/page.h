@@ -23,6 +23,9 @@ typedef struct page_records_t {
     size_t size;
     size_t capacity;
     page_record_t *page_records;
+    // sim out
+    uint32_t page_faults;
+    uint32_t write_backs;
 } page_records_t;
 
 page_records_t page_records_new();
@@ -41,7 +44,7 @@ typedef struct page_result_t {
 
 typedef struct page_results_t {
     int size;
-    page_result_t *page_results;
+    page_records_t page_records;
 } page_results_t;
 
 page_results_t page_results_from_page_records(page_records_t *page_records);

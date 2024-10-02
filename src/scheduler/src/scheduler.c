@@ -15,7 +15,7 @@ int opt_comp(const page_record_t* a)
 
 int fifo_comp(const page_record_t* a)
 {
-  return a->arrival_time;
+  return -(int) a->arrival_time;
 }
 
 int lru_comp(const page_record_t* a){
@@ -28,7 +28,7 @@ int clk_comp(const page_record_t* a){
   exit(1);
 }
 
-page_results_t main_runner(int argc, char *argv[]) {
+page_records_t main_runner(int argc, char *argv[]) {
   // Checking if the number of arguments is correct
   if (argc != 2) {
     fprintf(stderr, "Usage: %s (OPT,FIFO,LRU,CLK) < (inputfile)\n",
@@ -83,21 +83,21 @@ page_results_t main_runner(int argc, char *argv[]) {
     exit(1);
   }
 
-  page_results_t page_results = simulator_run(&simulator);
-  return page_results;
+  page_records_t page_records_out = simulator_run(&simulator);
+  return page_records_out;
 }
 
-page_results_t main_runner_no_stdin(int argc, char *argv[], char *input) {
+page_records_t main_runner_no_stdin(int argc, char *argv[], char *input) {
   // Checking if the number of arguments is correct
-  if (argc != 2 && argc != 3) {
-    fprintf(stderr, "Usage: %s (FCFS,SJF,RR,Priority,SRT) [exp_weight | rr time quantum] < (inputfile)\n",
+  if (argc != 2) {
+    fprintf(stderr, "Usage: %s (OPT,FIFO,LRU,CLK) < (inputfile)\n",
             argv[0]);
     exit(1);
   }
 
   // Finding which scheduling algorithm was chosen
   char *scheduling_algorithm = argv[1];
-  char *scheduling_algorithms[] = {"FCFS", "SJF","RR", "Priority", "SRT"};
+  char *scheduling_algorithms[] = {"OPT", "FIFO","LRU", "CLK"};
   int num_scheduling_algorithms =
       sizeof(scheduling_algorithms) / sizeof(char *);
   int algorithm_chosen = 0;
@@ -142,7 +142,7 @@ page_results_t main_runner_no_stdin(int argc, char *argv[], char *input) {
     exit(1);
   }
 
-  page_results_t page_results = simulator_run(&simulator);
-  return page_results;
+  page_records_t page_records_out = simulator_run(&simulator);
+  return page_records_out;
 
 }

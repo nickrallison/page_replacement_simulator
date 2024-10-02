@@ -13,7 +13,7 @@ int rr_comp(const void *first, const void *second);
 int priority_comp(const void *first, const void *second);
 int srt_comp(const void *first, const void *second);
 
-page_results_t main_runner(int argc, char *argv[]);
-page_results_t main_runner_no_stdin(int argc, char *argv[], char* input);
+page_records_t main_runner(int argc, char *argv[]);
+page_records_t main_runner_no_stdin(int argc, char *argv[], char* input);
 
 #endif //SCHEDULER_H

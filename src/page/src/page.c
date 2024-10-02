@@ -44,9 +44,11 @@ int page_records_append(page_records_t *self, const page_record_t page_record) {
 }
 
 int page_records_print(const page_records_t *self) {
-    for (int i = 0; i < self->size; i++) {
-        page_record_print(&self->page_records[i]);
-    }
+    // for (int i = 0; i < self->size; i++) {
+    //     page_record_print(&self->page_records[i]);
+    // }
+    printf("Page Faults: %d\n", self->page_faults);
+    printf("Write Backs: %d\n", self->write_backs);
     return 0;
 }
 
@@ -111,3 +113,21 @@ int page_records_sort_by(page_records_t *self,
     return 0;
 }
 
+// page_results_t page_results_from_page_records(page_records_t *page_records) {
+//     page_results_t page_results = {page_records->size, page_records};
+//     return page_results;
+// }
+//
+// int page_results_merge(page_results_t *self, page_result_t other) {
+//     for (int i = 0; i < other.size; i++) {
+//         page_record_t page_record = other.page_records[i];
+//         page_results_append(self, page_record);
+//     }
+//     return 0;
+// }
+// int page_results_print(const page_results_t *self) {
+//     for (int i = 0; i < self->size; i++) {
+//         page_record_print(&self->page_records[i]);
+//     }
+//     return 0;
+// }

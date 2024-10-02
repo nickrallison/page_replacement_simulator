@@ -40,7 +40,7 @@ typedef struct simulator_t {
 simulator_t simulator_new(page_records_t* page_records,
                           int (*get_value)(const page_record_t *), uint32_t cache_size);
 
-page_results_t simulator_run(simulator_t *simulator);
+page_records_t simulator_run(simulator_t *simulator);
 
 
 #endif // SIMULATOR_H
