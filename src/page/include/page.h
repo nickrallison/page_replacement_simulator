@@ -12,6 +12,8 @@ typedef struct page_record_t {
 
     // Assigned characteristics
     uint32_t arrival_time;
+    uint32_t last_access_time;
+    uint8_t second_chance;
 } page_record_t;
 
 page_record_t page_record_new(uint32_t page_number, uint8_t dirty);

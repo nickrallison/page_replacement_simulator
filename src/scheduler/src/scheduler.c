@@ -7,28 +7,28 @@
 
 #include "page.h"
 
-int opt_comp(const page_record_t* a)
-{
-  printf("opt_comp Not implemented\n");
-  exit(1);
-}
+// int opt_comp(const page_record_t* a)
+// {
+//   printf("opt_comp Not implemented\n");
+//   exit(1);
+// }
+//
+// int fifo_comp(const page_record_t* a)
+// {
+//   return -(int) a->arrival_time;
+// }
+//
+// int lru_comp(const page_record_t* a){
+//   printf("lru_comp Not implemented\n");
+//   exit(1);
+// }
+//
+// int clk_comp(const page_record_t* a){
+//   printf("clk_comp Not implemented\n");
+//   exit(1);
+// }
 
-int fifo_comp(const page_record_t* a)
-{
-  return -(int) a->arrival_time;
-}
-
-int lru_comp(const page_record_t* a){
-  printf("lru_comp Not implemented\n");
-  exit(1);
-}
-
-int clk_comp(const page_record_t* a){
-  printf("clk_comp Not implemented\n");
-  exit(1);
-}
-
-page_records_t main_runner(int argc, char *argv[]) {
+simulator_stats_t main_runner(int argc, char *argv[]) {
   // Checking if the number of arguments is correct
   if (argc != 2) {
     fprintf(stderr, "Usage: %s (OPT,FIFO,LRU,CLK) < (inputfile)\n",
@@ -70,24 +70,26 @@ page_records_t main_runner(int argc, char *argv[]) {
   page_records_t page_records = create_page_records();
 
   simulator_t simulator;
+  uint32_t cache_capacity = 32;
+  uint32_t interrupt_interval = 30;
   if (algorithm_chosen == 0) {
-    simulator = simulator_new(&page_records, &opt_comp, 32);
+    simulator = simulator_new(&page_records, 0, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 1) {
-    simulator = simulator_new(&page_records, &fifo_comp, 32);
+    simulator = simulator_new(&page_records, 1, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 2) {
-    simulator = simulator_new(&page_records, &lru_comp, 32);
+    simulator = simulator_new(&page_records, 2, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 3) {
-    simulator = simulator_new(&page_records, &clk_comp, 32);
+    simulator = simulator_new(&page_records, 3, cache_capacity, interrupt_interval);
   } else {
     fprintf(stderr,"Simulator could not be created\n");
     exit(1);
   }
 
-  page_records_t page_records_out = simulator_run(&simulator);
-  return page_records_out;
+  simulator_stats_t stats = simulator_run(&simulator);
+  return stats;
 }
 
-page_records_t main_runner_no_stdin(int argc, char *argv[], char *input) {
+simulator_stats_t main_runner_no_stdin(int argc, char *argv[], char *input) {
   // Checking if the number of arguments is correct
   if (argc != 2) {
     fprintf(stderr, "Usage: %s (OPT,FIFO,LRU,CLK) < (inputfile)\n",
@@ -129,20 +131,22 @@ page_records_t main_runner_no_stdin(int argc, char *argv[], char *input) {
   page_records_t page_records = create_page_records_no_stdin(input);
 
   simulator_t simulator;
+  uint32_t cache_capacity = 32;
+  uint32_t interrupt_interval = 30;
   if (algorithm_chosen == 0) {
-    simulator = simulator_new(&page_records, &opt_comp, 32);
+    simulator = simulator_new(&page_records, 0, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 1) {
-    simulator = simulator_new(&page_records, &fifo_comp, 32);
+    simulator = simulator_new(&page_records, 1, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 2) {
-    simulator = simulator_new(&page_records, &lru_comp, 32);
+    simulator = simulator_new(&page_records, 2, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 3) {
-    simulator = simulator_new(&page_records, &clk_comp, 32);
+    simulator = simulator_new(&page_records, 3, cache_capacity, interrupt_interval);
   } else {
     fprintf(stderr,"Simulator could not be created\n");
     exit(1);
   }
 
-  page_records_t page_records_out = simulator_run(&simulator);
-  return page_records_out;
+  simulator_stats_t stats = simulator_run(&simulator);
+  return stats;
 
 }
