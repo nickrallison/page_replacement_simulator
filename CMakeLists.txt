@@ -19,5 +19,5 @@ add_subdirectory(src/page)
 add_subdirectory(src/simulator)
 add_subdirectory(src/executable)
 
-# add_subdirectory(src/test)
+ add_subdirectory(src/test)
 # add_subdirectory(src/graphing)

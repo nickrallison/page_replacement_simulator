@@ -89,7 +89,7 @@ simulator_stats_t main_runner(int argc, char *argv[]) {
   return stats;
 }
 
-simulator_stats_t main_runner_no_stdin(int argc, char *argv[], char *input) {
+simulator_stats_t main_runner_no_stdin(int argc, char *argv[], char *input, uint32_t cache_capacity, uint32_t interrupt_interval) {
   // Checking if the number of arguments is correct
   if (argc != 2) {
     fprintf(stderr, "Usage: %s (OPT,FIFO,LRU,CLK) < (inputfile)\n",
@@ -131,8 +131,6 @@ simulator_stats_t main_runner_no_stdin(int argc, char *argv[], char *input) {
   page_records_t page_records = create_page_records_no_stdin(input);
 
   simulator_t simulator;
-  uint32_t cache_capacity = 32;
-  uint32_t interrupt_interval = 30;
   if (algorithm_chosen == 0) {
     simulator = simulator_new(&page_records, 0, cache_capacity, interrupt_interval);
   } else if (algorithm_chosen == 1) {

@@ -205,6 +205,7 @@ void simulator_time_step_fifo(simulator_t* simulator) {
                 simulator->write_backs++;
             }
             simulator->page_cache[oldest_page_cache_index] = page;
+            simulator->page_cache[oldest_page_cache_index].arrival_time = simulator->current_index;
         }
     }
     simulator->current_index++;
@@ -251,6 +252,7 @@ void simulator_time_step_lru(simulator_t* simulator) {
                 simulator->write_backs++;
             }
             simulator->page_cache[oldest_page_cache_index] = page;
+            simulator->page_cache[oldest_page_cache_index].last_access_time = simulator->current_index;
         }
     }
     simulator->current_index++;

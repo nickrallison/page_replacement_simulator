@@ -7,7 +7,7 @@
  # This is your project statement. You should always list languages;
  # Listing the version is nice here since it sets lots of useful variables
  project(
-         scheduler_test
+         test
          VERSION 1.0
          LANGUAGES C
  )
@@ -37,7 +37,6 @@
  # even flags, so linking a target that does not exist will not give a configure-time error.
  target_link_libraries(${PROJECT_NAME}
          PRIVATE
-         process
          simulator
          scheduler
  )
