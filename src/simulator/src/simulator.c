@@ -14,11 +14,12 @@ simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_typ
     for (int i = 0; i < cache_size; i++) {
         page_cache[i] = page_record_new(0, 0);
     }
+    clock_register_t* clock_registers = malloc(cache_capacity * sizeof(clock_register_t));
     uint32_t page_faults = 0;
     uint32_t write_backs = 0;
     uint32_t clock_index = 0;
     uint32_t interrupt_counter = 0;
-    simulator_t simulator = {current_index, page_records_in_order, cache_capacity, cache_size, page_cache, page_faults, write_backs, sim_type, clock_index, interrupt_interval, interrupt_counter};
+    simulator_t simulator = {current_index, clock_registers, page_records_in_order, cache_capacity, cache_size, page_cache, page_faults, write_backs, sim_type, clock_index, interrupt_interval, interrupt_counter};
     return simulator;
 }
 
