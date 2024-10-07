@@ -38,6 +38,7 @@ void simulator_time_step_opt(simulator_t* simulator) {
     for (int i = 0; i < simulator->cache_size; i++) {
         if (simulator->page_cache[i].page_number == page_number) {
             found = 1;
+            simulator->page_cache[i].dirty = page.dirty | simulator->page_cache[i].dirty;
             break;
         }
     }
@@ -50,18 +51,30 @@ void simulator_time_step_opt(simulator_t* simulator) {
             simulator->cache_size++;
         } else {
             // if the cache is full, replace the page that will be used the farthest in the future
-            uint32_t farthest_page_cache_index = 0;
-            uint32_t farthest_page_index = 0;
+            uint32_t* farthest_page_cache_indices = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
+            uint32_t* farthest_page_numbers = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
+            for (int i = 0; i < simulator->cache_size; i++) {
+                farthest_page_cache_indices[i] = UINT32_MAX;
+                farthest_page_numbers[i] = 0;
+            }
+            // uint32_t farthest_page_index
             for (int i = 0; i < simulator->cache_size; i++) {
                 for (uint32_t j = simulator->current_index; j < simulator->page_records_in_order->size; j++) {
-                    // i -> cache index, j -> page_records index
-                    if (simulator->page_cache[i].page_number == simulator->page_records_in_order->page_records[j].page_number) {
-                        if (j >= farthest_page_index) {
-                            farthest_page_cache_index = i;
-                            farthest_page_index = j;
-                        }
+                    uint32_t page_number = simulator->page_cache[i].page_number;
+                    uint32_t cache_index = i;
+                    if (simulator->page_records_in_order->page_records[j].page_number == page_number) {
+                        farthest_page_cache_indices[i] = cache_index;
+                        farthest_page_numbers[i] = page_number;
                         break;
                     }
+                }
+            }
+            uint32_t farthest_page_cache_index = 0;
+            uint32_t farthest_page_number = 0;
+            for (int i = 0; i < simulator->cache_size; i++) {
+                if (farthest_page_cache_indices[i] > farthest_page_cache_index && farthest_page_cache_indices[i] != UINT32_MAX) {
+                    farthest_page_cache_index = farthest_page_cache_indices[i];
+                    farthest_page_number = farthest_page_numbers[i];
                 }
             }
             // when evicting a page, check if it is dirty
@@ -88,6 +101,7 @@ void simulator_time_step_fifo(simulator_t* simulator) {
     for (int i = 0; i < simulator->cache_size; i++) {
         if (simulator->page_cache[i].page_number == page_number) {
             found = 1;
+            simulator->page_cache[i].dirty = page.dirty | simulator->page_cache[i].dirty;
             break;
         }
     }
@@ -132,8 +146,9 @@ void simulator_time_step_lru(simulator_t* simulator) {
     uint8_t found = 0;
     for (int i = 0; i < simulator->cache_size; i++) {
         if (simulator->page_cache[i].page_number == page_number) {
-            simulator->page_cache[i].last_access_time = simulator->current_index;
             found = 1;
+            simulator->page_cache[i].last_access_time = simulator->current_index;
+            simulator->page_cache[i].dirty = page.dirty | simulator->page_cache[i].dirty;
             break;
         }
     }
@@ -225,6 +240,7 @@ void simulator_time_step_clk(simulator_t* simulator) {
     for (int i = 0; i < simulator->cache_size; i++) {
         if (simulator->page_cache[i].page_number == page_number) {
             simulator->page_cache[i].last_access_time = simulator->current_index;
+            simulator->page_cache[i].dirty = page.dirty | simulator->page_cache[i].dirty;
             clock_register_set_front_one(&simulator->clock_registers[i]);
             found = 1;
             break;
@@ -290,6 +306,12 @@ simulator_stats_t simulator_run(simulator_t *simulator) {
     while (simulator->current_index < simulator->page_records_in_order->size) {
         simulator_time_step(simulator);
     }
-    simulator_stats_t stats = {simulator->page_faults, simulator->write_backs};
+    uint32_t dirty_in_cache = 0;
+    for (int i = 0; i < simulator->cache_size; i++) {
+        if (simulator->page_cache[i].dirty) {
+            dirty_in_cache++;
+        }
+    }
+    simulator_stats_t stats = {simulator->page_faults, simulator->write_backs + dirty_in_cache};
     return stats;
 }
