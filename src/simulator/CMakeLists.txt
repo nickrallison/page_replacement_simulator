@@ -30,6 +30,7 @@ project(
 # Adding something we can run - Output name matches target name
 add_library(${PROJECT_NAME}
   src/simulator.c
+        src/reg.c
 )
 
 # add include directories

@@ -6,20 +6,9 @@
 #include <stdint.h>
 
 #include "page.h"
+#include "reg.h"
 
 // register for clock algorithm
-typedef struct clock_register_t {
-    uint32_t bit_count;
-    uint8_t* bits;
-    uint32_t clock_period;
-    uint32_t clock_count;
-} clock_register_t;
-
-clock_register_t clock_register_new(uint32_t clock_period, uint32_t bit_count);
-int clock_register_clock(clock_register_t *self);
-int clock_register_shift(clock_register_t *self);
-int clock_register_reset(clock_register_t *self);
-int clock_register_is_zero(clock_register_t *self);
 
 typedef struct simulator_stats_t {
     uint32_t page_faults;
@@ -47,10 +36,10 @@ typedef struct simulator_t {
 
     uint32_t interrupt_interval;
     uint32_t interrupt_counter;
+    uint32_t clock_reg_size;
 } simulator_t;
 
-simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_type, uint32_t cache_capacity, uint32_t interrupt_interval);
-
+simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_type, uint32_t cache_capacity, uint32_t interrupt_interval, uint32_t clock_reg_size);
 simulator_stats_t simulator_run(simulator_t *simulator);
 
 

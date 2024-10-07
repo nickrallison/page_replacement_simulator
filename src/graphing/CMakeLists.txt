@@ -38,7 +38,6 @@
  # even flags, so linking a target that does not exist will not give a configure-time error.
  target_link_libraries(${PROJECT_NAME}
          PRIVATE
-         process
          simulator
          scheduler
  )

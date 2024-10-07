@@ -15,6 +15,6 @@ int priority_comp(const void *first, const void *second);
 int srt_comp(const void *first, const void *second);
 
 simulator_stats_t main_runner(int argc, char *argv[]);
-simulator_stats_t main_runner_no_stdin(int argc, char *argv[], char* input, uint32_t capacity, uint32_t interval);
+simulator_stats_t main_runner_no_stdin(int argc, char *argv[], char* input, uint32_t capacity, uint32_t interval, uint32_t clock_reg_size);
 
 #endif //SCHEDULER_H

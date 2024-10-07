@@ -3,55 +3,45 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "pid_record.h"
+#include "simulator.h"
 #include "scheduler.h"
 
 
-char* test_1_input = "Pid,Arrival Time,Time until first Response,Burst Length\n42,0,15,42\n24,10,100,186\n42,15,7,36\n14,16,152,158\n";
-char* test_2_input = "Pid,Arrival Time,Time until first Response,Burst Length\n42,0,15,42\n24,10,100,186\n42,15,7,36\n14,16,152,158\n40,20,194,199\n46,23,39,133\n17,31,97,131\n14,37,35,75\n11,41,33,131\n39,43,2,8\n";
+// char* test_1_input = "Pid,Arrival Time,Time until first Response,Burst Length\n42,0,15,42\n24,10,100,186\n42,15,7,36\n14,16,152,158\n";
+// char* test_2_input = "Pid,Arrival Time,Time until first Response,Burst Length\n42,0,15,42\n24,10,100,186\n42,15,7,36\n14,16,152,158\n40,20,194,199\n46,23,39,133\n17,31,97,131\n14,37,35,75\n11,41,33,131\n39,43,2,8\n";
 
-char* read_file(char* filename) {
+char* read_file_to_string(char* filename) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Error opening file\n");
         return NULL;
     }
-
     fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
+    long length = ftell(file);
     fseek(file, 0, SEEK_SET);
-
-    char* buffer = malloc(file_size + 1);
-    if (buffer == NULL) {
-        printf("Error allocating buffer\n");
-        return NULL;
-    }
-
-    fread(buffer, 1, file_size, file);
+    char* buffer = malloc(length + 1);
+    fread(buffer, 1, length, file);
     fclose(file);
-
-    buffer[file_size] = 0;
+    buffer[length] = '\0';
     return buffer;
 }
 
 
+int main() {
 
-int main(int argc, char *argv[]) {
-    char* input = read_file(argv[1]);
-    int local_argc = 3;
-    int rr_min = 1;
-    int rr_max = 100;
-    for (int i = rr_min; i <= rr_max; i++) {
-        // int to string
-        char str[12];
-        sprintf(str, "%d", i);
-        char* local_argv[] = {"./scheduler", "RR", str};
-        pid_results_t pid_results = main_runner_no_stdin(local_argc, local_argv, input);
-        pid_results_debug_print(&pid_results);
+    // fcfs test
+    char* fifo_argv[] = {"test", "CLK"};
+    int fifo_argc = 2;
+    char* fifo_input = read_file_to_string("cpsca2input.csv");
+    for (int i = 1; i < 100; i++) {
+        uint32_t capacity = i;
+        uint32_t interval = 10;
+        uint32_t clock_reg_size = 64;
+        simulator_stats_t stats = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval, clock_reg_size);
+        // spaced out for readability
+        // remove leading 0's
+        printf("%d, %d, %d\n", capacity, stats.page_faults, stats.write_backs);
+        // printf("Frames: %.4d, Page Faults: %.6d, Write Backs: %.6d\n",
+        //        capacity, stats.page_faults, stats.write_backs);
     }
 
-    // char* local_argv[] = {"./scheduler", "RR", "10"};
-    // pid_results_t pid_results = main_runner_no_stdin(local_argc, local_argv, input);
-
-    printf("do thing with pid_results\n");
 }

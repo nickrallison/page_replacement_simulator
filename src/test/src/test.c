@@ -25,18 +25,30 @@ char* read_file_to_string(char* filename) {
     return buffer;
 }
 
+int fifo_test_1() {
+    char* fifo_argv[] = {"test", "FIFO"};
+    int fifo_argc = 2;
+    char* fifo_input = "Page#,dirty?\n6,1\n";
+    uint32_t capacity = 3;
+    uint32_t interval = 0;
+    uint32_t clock_reg_size = 0;
+    simulator_stats_t stats = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval, clock_reg_size);
+    printf("Frames: %.4d, Page Faults: %.6d, Write Backs: %.6d\n",
+           capacity, stats.page_faults, stats.write_backs);
+}
+
 
 int main() {
 
     // fcfs test
-    char* fifo_argv[] = {"test", "FIFO"};
+    char* fifo_argv[] = {"test", "CLK"};
     int fifo_argc = 2;
     char* fifo_input = read_file_to_string("cpsca2input.csv");
-    char* cwd = getcwd(NULL, 0);
-    for (int i = 1; i < 50; i++) {
+    for (int i = 1; i < 100; i++) {
         uint32_t capacity = i;
-        uint32_t interval = 0;
-        simulator_stats_t stats = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval);
+        uint32_t interval = 10;
+        uint32_t clock_reg_size = 64;
+        simulator_stats_t stats = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval, clock_reg_size);
         // spaced out for readability
         // remove leading 0's
         printf("%d, %d, %d\n", capacity, stats.page_faults, stats.write_backs);

@@ -5,9 +5,10 @@
 #include <stdio.h>
 
 #include "page.h"
+#include "reg.h"
 
 // #### SIMULATOR ####
-simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_type, uint32_t cache_capacity, uint32_t interrupt_interval) {
+simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_type, uint32_t cache_capacity, uint32_t interrupt_interval, uint32_t clock_reg_size) {
     int current_index = 0;
     uint32_t cache_size = 0;
     page_record_t *page_cache = malloc(cache_capacity * sizeof(page_record_t));
@@ -19,7 +20,7 @@ simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_typ
     uint32_t write_backs = 0;
     uint32_t clock_index = 0;
     uint32_t interrupt_counter = 0;
-    simulator_t simulator = {current_index, clock_registers, page_records_in_order, cache_capacity, cache_size, page_cache, page_faults, write_backs, sim_type, clock_index, interrupt_interval, interrupt_counter};
+    simulator_t simulator = {current_index, clock_registers, page_records_in_order, cache_capacity, cache_size, page_cache, page_faults, write_backs, sim_type, clock_index, interrupt_interval, interrupt_counter, clock_reg_size};
     return simulator;
 }
 
@@ -166,28 +167,65 @@ void simulator_time_step_lru(simulator_t* simulator) {
     simulator->current_index++;
 }
 
+// typedef struct clock_register_t {
+//     uint32_t bit_count;
+//     uint8_t* bits;
+// } clock_register_t;
+//
+// clock_register_t clock_register_new(uint32_t clock_period, uint32_t bit_count);
+// int clock_register_shift(clock_register_t *self);
+// int clock_register_set_front_one(clock_register_t *self);
+// int clock_register_reset(clock_register_t *self);
+// int clock_register_is_zero(clock_register_t *self);
+
+// typedef struct simulator_t {
+//     int current_index;
+//     clock_register_t* clock_registers;
+//     page_records_t *page_records_in_order;
+//
+//     uint32_t cache_capacity;
+//     uint32_t cache_size;
+//     page_record_t *page_cache;
+//
+//     uint32_t page_faults;
+//     uint32_t write_backs;
+//
+//     uint8_t sim_type;
+//
+//     // ####
+//     // Clock
+//     // ####
+//     uint32_t clock_index;
+//
+//     uint32_t interrupt_interval;
+//     uint32_t interrupt_counter;
+//     uint32_t clock_reg_size;
+// } simulator_t;
+
 // Clock
 // ####
 // 1. Find out if the page is in the cache
-// 2. If it is, do set the most_recent_access_time to the current time and set the second_chance bit to 1
-// 3. If it is not, replace the page that has the second chance bit set to 0
+// 2. If it is, do set the most_recent_access_time to the current time and set a one in the clock register for that page
+// 3. If it is not, step though the clocks, decrementing each bit until a zero is found
 void simulator_time_step_clk(simulator_t* simulator) {
-
-    if (simulator->interrupt_interval > 0) {
-        simulator->interrupt_counter++;
-        if (simulator->interrupt_counter == simulator->interrupt_interval) {
-            for (int i = 0; i < simulator->cache_size; i++) {
-                simulator->page_cache[i].second_chance = 0;
-            }
-            simulator->interrupt_counter = 0;
-        }
-    }
-
     page_record_t page = simulator->page_records_in_order->page_records[simulator->current_index];
     uint32_t page_number = page.page_number;
     uint8_t found = 0;
+
+
+    // clock interrupt to reset the clock registers
+    simulator->interrupt_counter++;
+    if (simulator->interrupt_counter == simulator->interrupt_interval) {
+        for (int i = 0; i < simulator->cache_size; i++) {
+            clock_register_shift(&simulator->clock_registers[i]);
+        }
+        simulator->interrupt_counter = 0;
+    }
+
     for (int i = 0; i < simulator->cache_size; i++) {
         if (simulator->page_cache[i].page_number == page_number) {
+            simulator->page_cache[i].last_access_time = simulator->current_index;
+            clock_register_set_front_one(&simulator->clock_registers[i]);
             found = 1;
             break;
         }
@@ -198,29 +236,34 @@ void simulator_time_step_clk(simulator_t* simulator) {
         simulator->page_faults++;
         if (simulator->cache_size < simulator->cache_capacity) {
             page.arrival_time = simulator->current_index;
+            page.last_access_time = simulator->current_index;
             simulator->page_cache[simulator->cache_size] = page;
-            simulator->page_cache[simulator->cache_size].second_chance = 1;
+            simulator->clock_registers[simulator->cache_size] = clock_register_new(simulator->clock_reg_size);
             simulator->cache_size++;
         } else {
-            // if the cache is full, replace the page that has the second chance bit set to 0
-            while (1) {
-                if (simulator->page_cache[simulator->clock_index].second_chance) {
-                    simulator->page_cache[simulator->clock_index].second_chance = 0;
+            // if the cache is full, replace the page that has a zero in the clock register
+            uint32_t zero_page_cache_index = 0;
+            for (int i = 0; i < simulator->cache_size; i++) {
+                while (1) {
+                    if (clock_register_is_zero(&simulator->clock_registers[simulator->clock_index])) {
+                        zero_page_cache_index = simulator->clock_index;
+                        break;
+                    }
+                    clock_register_shift(&simulator->clock_registers[simulator->clock_index]);
                     simulator->clock_index = (simulator->clock_index + 1) % simulator->cache_size;
-                } else {
-                    break;
                 }
             }
             // when evicting a page, check if it is dirty
-            if (simulator->page_cache[simulator->clock_index].dirty) {
+            if (simulator->page_cache[zero_page_cache_index].dirty) {
                 simulator->write_backs++;
             }
-            simulator->page_cache[simulator->clock_index] = page;
-            simulator->page_cache[simulator->clock_index].second_chance = 1;
-            simulator->clock_index = (simulator->clock_index + 1) % simulator->cache_size;
+            simulator->page_cache[zero_page_cache_index] = page;
+            simulator->clock_registers[zero_page_cache_index] = clock_register_new(simulator->clock_reg_size);
+            clock_register_set_front_one(&simulator->clock_registers[zero_page_cache_index]);
         }
     }
     simulator->current_index++;
+
 }
 
 void simulator_time_step(simulator_t* simulator) {
