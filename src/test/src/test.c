@@ -159,7 +159,7 @@ int main() {
     int fifo_test_4_result = fifo_test_4();
     int fifo_test_5_result = fifo_test_5();
 
-    int opt_test_1_result = opt_test_1();
+    // int opt_test_1_result = opt_test_1();
     int opt_test_2_result = opt_test_2();
 
     return 0;

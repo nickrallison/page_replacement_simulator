@@ -52,19 +52,19 @@ void simulator_time_step_opt(simulator_t* simulator) {
         } else {
             // if the cache is full, replace the page that will be used the farthest in the future
             uint32_t* farthest_page_cache_indices = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
-            uint32_t* farthest_page_numbers = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
+            // uint32_t* farthest_page_numbers = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
             for (int i = 0; i < simulator->cache_size; i++) {
                 farthest_page_cache_indices[i] = UINT32_MAX;
-                farthest_page_numbers[i] = 0;
+                // farthest_page_numbers[i] = 0;
             }
             // uint32_t farthest_page_index
             for (int i = 0; i < simulator->cache_size; i++) {
                 for (uint32_t j = simulator->current_index; j < simulator->page_records_in_order->size; j++) {
-                    uint32_t page_number = simulator->page_cache[i].page_number;
+                    uint32_t page_number_watch = simulator->page_cache[i].page_number;
                     uint32_t cache_index = i;
                     if (simulator->page_records_in_order->page_records[j].page_number == page_number) {
                         farthest_page_cache_indices[i] = cache_index;
-                        farthest_page_numbers[i] = page_number;
+                        // farthest_page_numbers[i] = page_number;
                         break;
                     }
                 }
@@ -74,7 +74,7 @@ void simulator_time_step_opt(simulator_t* simulator) {
             for (int i = 0; i < simulator->cache_size; i++) {
                 if (farthest_page_cache_indices[i] > farthest_page_cache_index && farthest_page_cache_indices[i] != UINT32_MAX) {
                     farthest_page_cache_index = farthest_page_cache_indices[i];
-                    farthest_page_number = farthest_page_numbers[i];
+                    // farthest_page_number = farthest_page_numbers[i];
                 }
             }
             // when evicting a page, check if it is dirty
