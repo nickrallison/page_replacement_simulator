@@ -6,100 +6,7 @@
 
 #include "page.h"
 
-// #### page QUEUE ####
-// page_queue_t page_queue_new(int (*get_value)(const page_record_t *)) {
-//     page_records_t page_records = page_records_new();
-//     page_queue_t page_queue = {get_value, page_records};
-//     return page_queue;
-// }
-//
-// int page_record_exchange(page_record_t *a, page_record_t *b) {
-//     page_record_t temp = *a;
-//     *a = *b;
-//     *b = temp;
-//     return 0;
-// }
-//
-// int page_queue_add(page_queue_t *page_queue, page_record_t page) {
-//     page_records_append(&page_queue->page_queue, page);
-//
-//     int index = page_queue->page_queue.size - 1;
-//     uint32_t parent_index = (index - 1) / 2;
-//
-//     int key = page_queue->get_value(&page);
-//     // Min Int
-//     int parent_key = -2147483648;
-//     if (index > 0) {
-//         parent_key = page_queue->get_value(&page_queue->page_queue.page_records[parent_index]);
-//         while (index > 0 && key > parent_key) {
-//             page_record_exchange(&page_queue->page_queue.page_records[index],
-//                                 &page_queue->page_queue.page_records[parent_index]);
-//             index = parent_index;
-//             parent_index = (index - 1) / 2;
-//             key = page_queue->get_value(&page_queue->page_queue.page_records[index]);
-//             parent_key = -2147483648;
-//             if (index > 0) {
-//                 parent_key = page_queue->get_value(&page_queue->page_queue.page_records[parent_index]);
-//             }
-//         }
-//     }
-//     return 0;
-// }
-//
-// int page_queue_max_heapify(page_queue_t *page_queue, uint32_t index) {
-//     uint32_t left = 2 * index + 1;
-//     uint32_t right = 2 * index + 2;
-//     uint32_t largest = index;
-//
-//     if (left < page_queue->page_queue.size &&
-//         page_queue->get_value(&page_queue->page_queue.page_records[left]) >
-//         page_queue->get_value(&page_queue->page_queue.page_records[largest])) {
-//         largest = left;
-//     }
-//
-//     if (right < page_queue->page_queue.size &&
-//         page_queue->get_value(&page_queue->page_queue.page_records[right]) >
-//         page_queue->get_value(&page_queue->page_queue.page_records[largest])) {
-//         largest = right;
-//     }
-//
-//     if (largest != index) {
-//         page_record_exchange(&page_queue->page_queue.page_records[index],
-//                              &page_queue->page_queue.page_records[largest]);
-//         page_queue_max_heapify(page_queue, largest);
-//     }
-//     return 0;
-// }
-// page_record_t page_queue_pop_top(page_queue_t *page_queue) {
-//     page_record_t top = page_queue->page_queue.page_records[0];
-//     page_queue->page_queue.page_records[0] = page_queue->page_queue.page_records[page_queue->page_queue.size - 1];
-//     page_queue->page_queue.size--;
-//     page_queue_max_heapify(page_queue, 0);
-//     return top;
-// }
-
 // #### SIMULATOR ####
-// typedef struct simulator_t {
-//     int current_index;
-//     page_records_t *page_records_in_order;
-//
-//     uint32_t cache_capacity;
-//     uint32_t cache_size;
-//     page_record_t *page_cache;
-//
-//     uint32_t page_faults;
-//     uint32_t write_backs;
-//
-//     uint8_t sim_type;
-//
-//     // ####
-//     // Clock
-//     // ####
-//     uint32_t clock_index;
-//
-//     uint32_t interrupt_interval;
-//     uint32_t interrupt_counter;
-// } simulator_t;
 simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_type, uint32_t cache_capacity, uint32_t interrupt_interval) {
     int current_index = 0;
     uint32_t cache_size = 0;
@@ -336,7 +243,6 @@ void simulator_time_step(simulator_t* simulator) {
 }
 
 simulator_stats_t simulator_run(simulator_t *simulator) {
-    // this while loop will cause problems if
     while (simulator->current_index < simulator->page_records_in_order->size) {
         simulator_time_step(simulator);
     }

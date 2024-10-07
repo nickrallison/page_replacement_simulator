@@ -7,16 +7,16 @@
 
 #include "page.h"
 
+// register for clock algorithm
+typedef struct clock_register_t {
+    uint8_t* bits;
+    uint32_t clock_period;
+    uint32_t clock_count;
+} clock_register_t;
 
-// this is a heap struct to store the pages
-// typedef struct page_queue_t {
-//     int (*get_value)(const page_record_t *);
-//     page_records_t page_queue;
-// } page_queue_t;
-//
-// page_queue_t page_queue_new(int (*get_value)(const page_record_t *));
-//
-// int page_queue_add(page_queue_t *page_queue, page_record_t page);
+clock_register_t clock_register_new(uint32_t clock_period, uint32_t bit_count);
+int clock_register_inc(clock_register_t *self);
+
 
 typedef struct simulator_stats_t {
     uint32_t page_faults;

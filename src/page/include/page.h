@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
 // process#, arrival time, time until first response, actual CPU burst>
 typedef struct page_record_t {
     uint32_t page_number;
@@ -20,7 +21,6 @@ page_record_t page_record_new(uint32_t page_number, uint8_t dirty);
 int page_record_print(page_record_t *self);
 
 // ##### PAGE RECORDS CONTAINER #####
-
 typedef struct page_records_t {
     size_t size;
     size_t capacity;
