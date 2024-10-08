@@ -44,6 +44,7 @@ void simulator_time_step_opt(simulator_t* simulator) {
     }
 
     if (!found) {
+        // printf("Miss! Page %d not found in cache\n", page_number);
         // if the cache is not found, add the page to the cache and increment page_faults
         simulator->page_faults++;
         if (simulator->cache_size < simulator->cache_capacity) {
@@ -52,35 +53,53 @@ void simulator_time_step_opt(simulator_t* simulator) {
         } else {
             // if the cache is full, replace the page that will be used the farthest in the future
             uint32_t* farthest_page_cache_indices = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
-            // uint32_t* farthest_page_numbers = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
+            uint32_t* farthest_page_queue_indices = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
+            uint32_t* farthest_page_numbers = (uint32_t*) malloc(simulator->cache_size * sizeof(uint32_t));
             for (int i = 0; i < simulator->cache_size; i++) {
-                farthest_page_cache_indices[i] = UINT32_MAX;
-                // farthest_page_numbers[i] = 0;
+                farthest_page_cache_indices[i] = i;
+                farthest_page_queue_indices[i] = UINT32_MAX;
+                farthest_page_numbers[i] = simulator->page_cache[i].page_number;
             }
             // uint32_t farthest_page_index
             for (int i = 0; i < simulator->cache_size; i++) {
                 for (uint32_t j = simulator->current_index; j < simulator->page_records_in_order->size; j++) {
                     uint32_t page_number_watch = simulator->page_cache[i].page_number;
-                    uint32_t cache_index = i;
-                    if (simulator->page_records_in_order->page_records[j].page_number == page_number) {
-                        farthest_page_cache_indices[i] = cache_index;
-                        // farthest_page_numbers[i] = page_number;
+                    // uint32_t cache_index = i;
+                    // printf("page_number_watch: %d\n", page_number_watch);
+                    // printf("page: %d\n", simulator->page_records_in_order->page_records[j].page_number);
+                    if (simulator->page_records_in_order->page_records[j].page_number == page_number_watch) {
+                        // farthest_page_cache_indices[i] = cache_index;
+                        farthest_page_queue_indices[i] = j;
+                        farthest_page_numbers[i] = page_number_watch;
                         break;
                     }
                 }
             }
+            uint32_t farthest_page_queue_index = 0;
+            uint32_t farthest_page_number_watch = 0;
             uint32_t farthest_page_cache_index = 0;
-            uint32_t farthest_page_number = 0;
             for (int i = 0; i < simulator->cache_size; i++) {
-                if (farthest_page_cache_indices[i] > farthest_page_cache_index && farthest_page_cache_indices[i] != UINT32_MAX) {
-                    farthest_page_cache_index = farthest_page_cache_indices[i];
-                    // farthest_page_number = farthest_page_numbers[i];
+                // if (farthest_page_cache_indices[i] > farthest_page_cache_index && farthest_page_cache_indices[i] != UINT32_MAX) {
+                if (farthest_page_queue_indices[i] > farthest_page_queue_index) {
+                    farthest_page_queue_index = farthest_page_queue_indices[i];
+                    farthest_page_cache_index = i;
+                    farthest_page_number_watch = farthest_page_numbers[i];
+                    // printf("farthest_page_cache_index: %d\n", farthest_page_queue_index);
+                    // printf("farthest_page_number_watch: %d\n", farthest_page_number_watch);
                 }
             }
+
             // when evicting a page, check if it is dirty
+            // printf("Eviction! %d replaced with %d ", simulator->page_cache[farthest_page_cache_index].page_number, page.page_number);
             if (simulator->page_cache[farthest_page_cache_index].dirty) {
+                // printf("write back!\n");
                 simulator->write_backs++;
             }
+            else
+            {
+                printf("\n");
+            }
+
             simulator->page_cache[farthest_page_cache_index] = page;
         }
     }
