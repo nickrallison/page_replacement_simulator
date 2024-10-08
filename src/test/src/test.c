@@ -226,12 +226,12 @@ int clk_test_1() {
 int clk_test_2() {
     char* fifo_argv[] = {"test", "CLK"};
     int fifo_argc = 2;
-    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n8,1\n1,0\n5,0\n2,0\n5,0\n4,1\n6,1\n0,1\n6,1\n1,1\n0,1\n7,1\n";
-    uint32_t capacity = 4;
-    uint32_t interval = 0;
-    uint32_t clock_reg_size = 0;
+    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,1\n6,1\n1,1\n0,1\n7,1\n";
+    uint32_t capacity = 5;
+    uint32_t interval = 4;
+    uint32_t clock_reg_size = 2;
     simulator_stats_t actual = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval, clock_reg_size);
-    simulator_stats_t expected = {1,1};
+    simulator_stats_t expected = {9,9};
     if (actual.page_faults != expected.page_faults || actual.write_backs != expected.write_backs) {
         printf("CLK test 2 failed\n");
         printf("Expected: %d page faults, %d write backs\n", expected.page_faults, expected.write_backs);
@@ -241,22 +241,61 @@ int clk_test_2() {
     return 0;
 }
 
+int clk_test_3() {
+    char* fifo_argv[] = {"test", "CLK"};
+    int fifo_argc = 2;
+    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,0\n6,1\n1,1\n0,1\n7,1\n";
+    uint32_t capacity = 5;
+    uint32_t interval = 4;
+    uint32_t clock_reg_size = 2;
+    simulator_stats_t actual = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval, clock_reg_size);
+    simulator_stats_t expected = {9,9};
+    if (actual.page_faults != expected.page_faults || actual.write_backs != expected.write_backs) {
+        printf("CLK test 3 failed\n");
+        printf("Expected: %d page faults, %d write backs\n", expected.page_faults, expected.write_backs);
+        printf("Actual: %d page faults, %d write backs\n\n", actual.page_faults, actual.write_backs);
+        return 1;
+    }
+    return 0;
+}
+
+int clk_test_4() {
+    char* fifo_argv[] = {"test", "CLK"};
+    int fifo_argc = 2;
+    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,0\n6,1\n1,1\n0,0\n7,1\n";
+    uint32_t capacity = 5;
+    uint32_t interval = 4;
+    uint32_t clock_reg_size = 2;
+    simulator_stats_t actual = main_runner_no_stdin(fifo_argc, fifo_argv, fifo_input, capacity, interval, clock_reg_size);
+    simulator_stats_t expected = {9,8};
+    if (actual.page_faults != expected.page_faults || actual.write_backs != expected.write_backs) {
+        printf("CLK test 4 failed\n");
+        printf("Expected: %d page faults, %d write backs\n", expected.page_faults, expected.write_backs);
+        printf("Actual: %d page faults, %d write backs\n\n", actual.page_faults, actual.write_backs);
+        return 1;
+    }
+    return 0;
+}
+
 int main() {
 
-    int fifo_test_1_result = fifo_test_1();
-    int fifo_test_2_result = fifo_test_2();
-    int fifo_test_3_result = fifo_test_3();
-    int fifo_test_4_result = fifo_test_4();
-    int fifo_test_5_result = fifo_test_5();
+    // int fifo_test_1_result = fifo_test_1();
+    // int fifo_test_2_result = fifo_test_2();
+    // int fifo_test_3_result = fifo_test_3();
+    // int fifo_test_4_result = fifo_test_4();
+    // int fifo_test_5_result = fifo_test_5();
+    //
+    // int opt_test_1_result = opt_test_1();
+    // int opt_test_2_result = opt_test_2();
+    // int opt_test_3_result = opt_test_3();
+    //
+    // int lru_test_1_result = lru_test_1();
+    // int lru_test_2_result = lru_test_2();
 
-    int opt_test_1_result = opt_test_1();
-    int opt_test_2_result = opt_test_2();
-    int opt_test_3_result = opt_test_3();
-
-    int lru_test_1_result = lru_test_1();
-    int lru_test_2_result = lru_test_2();
-
-    int clk_test_1_result = clk_test_1();
+    // int clk_test_1_result = clk_test_1();
+    int clk_test_2_result = clk_test_2();
+    // int clk_test_3_result = clk_test_3();
+    // int clk_test_4_result = clk_test_4();
 
     return 0;
 

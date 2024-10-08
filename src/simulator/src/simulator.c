@@ -24,6 +24,17 @@ simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_typ
     return simulator;
 }
 
+void simulator_print_clocks(simulator_t* simulator) {
+    for (int i = 0; i < simulator->cache_size; i++) {
+        printf("Page %2d: Bits: ", simulator->page_cache[i].page_number);
+        for (int j = 0; j < simulator->clock_registers[i].bit_count; j++) {
+            printf("%d", simulator->clock_registers[i].bits[j]);
+        }
+        printf(", ");
+    }
+    printf("\n");
+}
+
 
 // Optimal
 // ####
@@ -250,9 +261,11 @@ void simulator_time_step_clk(simulator_t* simulator) {
     // clock interrupt to reset the clock registers
     simulator->interrupt_counter++;
     if (simulator->interrupt_counter == simulator->interrupt_interval) {
+        simulator_print_clocks(simulator);
         for (int i = 0; i < simulator->cache_size; i++) {
             clock_register_shift(&simulator->clock_registers[i]);
         }
+        simulator_print_clocks(simulator);
         simulator->interrupt_counter = 0;
     }
 
@@ -274,6 +287,7 @@ void simulator_time_step_clk(simulator_t* simulator) {
             page.last_access_time = simulator->current_index;
             simulator->page_cache[simulator->cache_size] = page;
             simulator->clock_registers[simulator->cache_size] = clock_register_new(simulator->clock_reg_size);
+            clock_register_set_front_one(&simulator->clock_registers[simulator->cache_size]);
             simulator->cache_size++;
         } else {
             // if the cache is full, replace the page that has a zero in the clock register
@@ -298,7 +312,7 @@ void simulator_time_step_clk(simulator_t* simulator) {
         }
     }
     simulator->current_index++;
-
+    simulator_print_clocks(simulator);
 }
 
 void simulator_time_step(simulator_t* simulator) {

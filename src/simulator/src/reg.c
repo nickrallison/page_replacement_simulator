@@ -28,10 +28,10 @@ clock_register_t clock_register_new(uint32_t bit_count) {
 }
 
 int clock_register_shift(clock_register_t *self) {
-    for (int i = 0; i < self->bit_count - 1; i++) {
-        self->bits[i] = self->bits[i + 1];
+    for (int i = self->bit_count - 1; i > 0; i--) {
+        self->bits[i] = self->bits[i - 1];
     }
-    self->bits[self->bit_count - 1] = 0;
+    self->bits[0] = 0;
     return 0;
 }
 
