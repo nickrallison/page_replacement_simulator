@@ -226,7 +226,7 @@ int clk_test_1() {
 int clk_test_2() {
     char* fifo_argv[] = {"test", "CLK"};
     int fifo_argc = 2;
-    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,1\n6,1\n1,1\n0,1\n7,1\n";
+    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,1\n1,1\n0,1\n7,1\n";
     uint32_t capacity = 5;
     uint32_t interval = 4;
     uint32_t clock_reg_size = 2;
@@ -244,7 +244,7 @@ int clk_test_2() {
 int clk_test_3() {
     char* fifo_argv[] = {"test", "CLK"};
     int fifo_argc = 2;
-    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,0\n6,1\n1,1\n0,1\n7,1\n";
+    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,0\n1,1\n0,1\n7,1\n";
     uint32_t capacity = 5;
     uint32_t interval = 4;
     uint32_t clock_reg_size = 2;
@@ -262,7 +262,7 @@ int clk_test_3() {
 int clk_test_4() {
     char* fifo_argv[] = {"test", "CLK"};
     int fifo_argc = 2;
-    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,0\n6,1\n1,1\n0,0\n7,1\n";
+    char* fifo_input = "Page#,dirty?\n6,1\n10,1\n5,1\n4,1\n3,1\n5,1\n1,1\n5,1\n2,1\n5,1\n4,1\n2,1\n0,0\n1,1\n0,0\n7,1\n";
     uint32_t capacity = 5;
     uint32_t interval = 4;
     uint32_t clock_reg_size = 2;
@@ -279,23 +279,23 @@ int clk_test_4() {
 
 int main() {
 
-    // int fifo_test_1_result = fifo_test_1();
-    // int fifo_test_2_result = fifo_test_2();
-    // int fifo_test_3_result = fifo_test_3();
-    // int fifo_test_4_result = fifo_test_4();
-    // int fifo_test_5_result = fifo_test_5();
-    //
-    // int opt_test_1_result = opt_test_1();
-    // int opt_test_2_result = opt_test_2();
-    // int opt_test_3_result = opt_test_3();
-    //
-    // int lru_test_1_result = lru_test_1();
-    // int lru_test_2_result = lru_test_2();
+    int fifo_test_1_result = fifo_test_1();
+    int fifo_test_2_result = fifo_test_2();
+    int fifo_test_3_result = fifo_test_3();
+    int fifo_test_4_result = fifo_test_4();
+    int fifo_test_5_result = fifo_test_5();
+
+    int opt_test_1_result = opt_test_1();
+    int opt_test_2_result = opt_test_2();
+    int opt_test_3_result = opt_test_3();
+
+    int lru_test_1_result = lru_test_1();
+    int lru_test_2_result = lru_test_2();
 
     // int clk_test_1_result = clk_test_1();
-    int clk_test_2_result = clk_test_2();
-    // int clk_test_3_result = clk_test_3();
-    // int clk_test_4_result = clk_test_4();
+    // int clk_test_2_result = clk_test_2();
+    int clk_test_3_result = clk_test_3();
+    int clk_test_4_result = clk_test_4();
 
     return 0;
 

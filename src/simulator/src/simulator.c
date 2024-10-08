@@ -24,17 +24,6 @@ simulator_t simulator_new(page_records_t* page_records_in_order, uint8_t sim_typ
     return simulator;
 }
 
-void simulator_print_clocks(simulator_t* simulator) {
-    for (int i = 0; i < simulator->cache_size; i++) {
-        printf("Page %2d: Bits: ", simulator->page_cache[i].page_number);
-        for (int j = 0; j < simulator->clock_registers[i].bit_count; j++) {
-            printf("%d", simulator->clock_registers[i].bits[j]);
-        }
-        printf(", ");
-    }
-    printf("\n");
-}
-
 
 // Optimal
 // ####
@@ -212,40 +201,18 @@ void simulator_time_step_lru(simulator_t* simulator) {
     simulator->current_index++;
 }
 
-// typedef struct clock_register_t {
-//     uint32_t bit_count;
-//     uint8_t* bits;
-// } clock_register_t;
-//
-// clock_register_t clock_register_new(uint32_t clock_period, uint32_t bit_count);
-// int clock_register_shift(clock_register_t *self);
-// int clock_register_set_front_one(clock_register_t *self);
-// int clock_register_reset(clock_register_t *self);
-// int clock_register_is_zero(clock_register_t *self);
-
-// typedef struct simulator_t {
-//     int current_index;
-//     clock_register_t* clock_registers;
-//     page_records_t *page_records_in_order;
-//
-//     uint32_t cache_capacity;
-//     uint32_t cache_size;
-//     page_record_t *page_cache;
-//
-//     uint32_t page_faults;
-//     uint32_t write_backs;
-//
-//     uint8_t sim_type;
-//
-//     // ####
-//     // Clock
-//     // ####
-//     uint32_t clock_index;
-//
-//     uint32_t interrupt_interval;
-//     uint32_t interrupt_counter;
-//     uint32_t clock_reg_size;
-// } simulator_t;
+void simulator_print_clocks(simulator_t* simulator) {
+    printf("Current Page: %2d - ", simulator->page_records_in_order->page_records[simulator->current_index].page_number);
+    printf("Pointer: %2d - ", simulator->clock_index);
+    for (int i = 0; i < simulator->cache_size; i++) {
+        printf("Page: %2d Bits: ", simulator->page_cache[i].page_number);
+        for (int j = 0; j < simulator->clock_registers[i].bit_count; j++) {
+            printf("%d", simulator->clock_registers[i].bits[j]);
+        }
+        printf(", ");
+    }
+    printf("\n");
+}
 
 // Clock
 // ####
@@ -259,15 +226,16 @@ void simulator_time_step_clk(simulator_t* simulator) {
 
 
     // clock interrupt to reset the clock registers
-    simulator->interrupt_counter++;
-    if (simulator->interrupt_counter == simulator->interrupt_interval) {
-        simulator_print_clocks(simulator);
+    if (simulator->interrupt_counter == 0) {
+        // printf("Clock Interrupt!\n");
+        // simulator_print_clocks(simulator);
         for (int i = 0; i < simulator->cache_size; i++) {
             clock_register_shift(&simulator->clock_registers[i]);
         }
-        simulator_print_clocks(simulator);
-        simulator->interrupt_counter = 0;
     }
+    simulator->interrupt_counter = (simulator->interrupt_counter + 1) % simulator->interrupt_interval;
+
+
 
     for (int i = 0; i < simulator->cache_size; i++) {
         if (simulator->page_cache[i].page_number == page_number) {
@@ -281,13 +249,21 @@ void simulator_time_step_clk(simulator_t* simulator) {
 
     if (!found) {
         // if the cache is not found, add the page to the cache and increment page_faults
+        // printf("Cache Miss!\n");
         simulator->page_faults++;
         if (simulator->cache_size < simulator->cache_capacity) {
             page.arrival_time = simulator->current_index;
             page.last_access_time = simulator->current_index;
-            simulator->page_cache[simulator->cache_size] = page;
-            simulator->clock_registers[simulator->cache_size] = clock_register_new(simulator->clock_reg_size);
-            clock_register_set_front_one(&simulator->clock_registers[simulator->cache_size]);
+            // simulator->page_cache[simulator->cache_size] = page;
+            // simulator->clock_registers[simulator->cache_size] = clock_register_new(simulator->clock_reg_size);
+            // clock_register_set_front_one(&simulator->clock_registers[simulator->cache_size]);
+
+            // use clock_index
+            simulator->page_cache[simulator->clock_index] = page;
+            simulator->clock_registers[simulator->clock_index] = clock_register_new(simulator->clock_reg_size);
+            clock_register_set_front_one(&simulator->clock_registers[simulator->clock_index]);
+            // simulator_print_clocks(simulator);
+            simulator->clock_index = (simulator->clock_index + 1) % simulator->cache_capacity;
             simulator->cache_size++;
         } else {
             // if the cache is full, replace the page that has a zero in the clock register
@@ -309,10 +285,15 @@ void simulator_time_step_clk(simulator_t* simulator) {
             simulator->page_cache[zero_page_cache_index] = page;
             simulator->clock_registers[zero_page_cache_index] = clock_register_new(simulator->clock_reg_size);
             clock_register_set_front_one(&simulator->clock_registers[zero_page_cache_index]);
+            // simulator_print_clocks(simulator);
+            simulator->clock_index = (simulator->clock_index + 1) % simulator->cache_capacity;
         }
+    } else
+    {
+        // simulator_print_clocks(simulator);
     }
+    // simulator_print_clocks(simulator);
     simulator->current_index++;
-    simulator_print_clocks(simulator);
 }
 
 void simulator_time_step(simulator_t* simulator) {
