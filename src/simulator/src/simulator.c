@@ -95,10 +95,6 @@ void simulator_time_step_opt(simulator_t* simulator) {
                 // printf("write back!\n");
                 simulator->write_backs++;
             }
-            else
-            {
-                printf("\n");
-            }
 
             simulator->page_cache[farthest_page_cache_index] = page;
         }
