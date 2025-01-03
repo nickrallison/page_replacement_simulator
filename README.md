@@ -85,9 +85,6 @@ Page Faults: 9
 Write Backs: 8
 ```
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgments
 - This project was developed as part of a course assignment for CPSC 457.
 - Special thanks to the teaching staff for their guidance and support.
